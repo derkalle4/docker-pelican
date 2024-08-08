@@ -6,6 +6,9 @@ on:
 jobs:
   docker-bfbc2:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     defaults:
       run:
         working-directory: './bfbc2'
