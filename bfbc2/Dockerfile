@@ -16,11 +16,6 @@ ENV USER=container \
     XVFB=1 \
     DEBIAN_FRONTEND=noninteractive
 
-# server default environment
-ENV SERVER_REGION=EU \
-    SERVER_CPUS=2 \
-    SERVER_THREADING=true
-
 # install core os
 RUN apt update && apt upgrade -y \
     && apt install -y git wget curl tar zip unzip binutils xz-utils liblzo2-2 cabextract iproute2 net-tools \
@@ -33,12 +28,17 @@ RUN apt update && apt upgrade -y \
 RUN dpkg --add-architecture i386 \
     && apt update && apt upgrade -y \
         xvfb \
-        wine32 \
         libgl1-mesa-glx:i386 \
         ca-certificates \
         unrar \
         winbind \
     && apt clean
+
+# install latest WINE
+RUN mkdir -pm755 /etc/apt/keyrings \
+    && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
+    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources \
+    && apt update && apt install -y winehq-stable
 
 RUN wget  https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks \
     && chmod +x /bin/winetricks
@@ -48,7 +48,7 @@ WORKDIR /home/container
 
 # install gameserver wine requirements
 RUN mkdir -p /home/container/server/ \
-    && xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" wineboot \
+    && wineboot \
     && xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" winetricks -q \
         dinput8 \
         vcrun2005 \
