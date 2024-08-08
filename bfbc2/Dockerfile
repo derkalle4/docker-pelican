@@ -31,6 +31,8 @@ RUN dpkg --add-architecture i386 \
         ca-certificates \
         unrar \
         winbind \
+        x11-apps \
+        imagemagick \
     && apt clean
 
 # install latest WINE
