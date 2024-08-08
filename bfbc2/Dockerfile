@@ -9,10 +9,9 @@ ENV USER=container \
     WINEARCH=win32 \
     WINEPREFIX="/home/container/.wine32" \
     DISPLAY=:0 \
-    DISPLAY_WIDTH=1024 \
-    DISPLAY_HEIGHT=768 \
-    DISPLAY_DEPTH=16 \
-    AUTO_UPDATE=1 \
+    DISPLAY_WIDTH=1280 \
+    DISPLAY_HEIGHT=1024 \
+    DISPLAY_DEPTH=24 \
     XVFB=1 \
     DEBIAN_FRONTEND=noninteractive
 
