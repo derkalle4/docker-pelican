@@ -6,6 +6,7 @@ LABEL org.opencontainers.image.licenses=GPLv3
 # OS environment
 ENV USER=container \
     HOME=/home/container \
+    WINEARCH=win32 \
     WINEPREFIX="/home/container/.wine" \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
