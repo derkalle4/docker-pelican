@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - bfbc2/**
+    workflow_dispatch:
 jobs:
   docker-bfbc2:
     runs-on: ubuntu-latest
