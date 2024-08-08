@@ -6,8 +6,7 @@ LABEL org.opencontainers.image.licenses=GPLv3
 # OS environment
 ENV USER=container \
     HOME=/home/container \
-    WINEARCH=win32 \
-    WINEPREFIX="/home/container/.wine32" \
+    WINEPREFIX="/home/container/.wine" \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
     DISPLAY_HEIGHT=1024 \
@@ -48,7 +47,7 @@ USER container
 WORKDIR /home/container
 
 # install gameserver wine requirements
-RUN mkdir -p /home/container/server/ \
+RUN mkdir -p /home/container/ \
     && wineboot \
     && xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" winetricks -q \
         dinput8 \
