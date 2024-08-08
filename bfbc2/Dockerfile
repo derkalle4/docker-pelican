@@ -39,9 +39,9 @@ RUN dpkg --add-architecture i386 \
 RUN mkdir -pm755 /etc/apt/keyrings \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources \
-    && apt update && apt install -y winehq-stable mono-complete
+    && apt update && apt install -y winehq-stable
 
-RUN wget  https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks \
+RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks \
     && chmod +x /bin/winetricks
 
 USER container
@@ -55,6 +55,10 @@ RUN mkdir -p /home/container/ \
         vcrun2005 \
         vcrun2008 \
         vcrun2010
+
+RUN wget https://dl.winehq.org/wine/wine-mono/9.2.0/wine-mono-9.2.0-x86.msi -O /home/container/wine-mono.msi \
+    && msiexec /i /home/container/wine-mono.msi \
+    && rm /home/container/wine-mono.msi
 
 COPY ./bin/entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
