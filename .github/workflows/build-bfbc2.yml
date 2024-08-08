@@ -1,12 +1,8 @@
 name: deploy BFBC2 to ghcr.io
-env:
-  DOTNET_VERSION: '6.0.x'
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
-
+    paths:
+      - bfbc2/**
 jobs:
   docker-bfbc2:
     runs-on: ubuntu-latest
@@ -14,7 +10,7 @@ jobs:
       run:
         working-directory: './bfbc2'
     steps:
-      - name: 'Checkout GitHub Action'
+      - name: 'Checkout Source Code'
         uses: actions/checkout@main
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v1
@@ -22,7 +18,7 @@ jobs:
           registry: ghcr.io
           username: ${{github.actor}}
           password: ${{secrets.GITHUB_TOKEN}}
-      - name: 'Build Inventory Image'
+      - name: 'Build and Deploy Docker Container'
         run: |
           docker build . --tag ghcr.io/derkalle4/docker-pelican-bfbc2:latest
           docker push ghcr.io/derkalle4/docker-pelican-bfbc2:latest
