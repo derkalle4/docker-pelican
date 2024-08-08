@@ -1,3 +1,0 @@
-- name: 'Login to GitHub Container Registry'
-  run: |
-    echo $CR_PAT | docker login ghcr.io -u <Your-GitHub-username> --password-stdin
