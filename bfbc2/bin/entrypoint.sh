@@ -1,1 +1,13 @@
-xvfb-run -n 10 -a -s "-nolisten tcp -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x24" wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance -mapPack2Enabled 1 -port ${SERVER_PORT} -timeStampLogNames -region ${SERVER_REGION} -heartBeatInterval 20000 -displayErrors 0 -displayAsserts 0 -crashDumpAsserts 0 -plasmaServerLog 0 -crashDumpErrors 0 -Server.ThreadingEnable ${SERVER_THREADING} -Core.JobProcessorCount ${SERVER_CPUS}
+#!/bin/bash
+cd /home/container
+
+# Make internal Docker IP address available to processes.
+INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
+export INTERNAL_IP
+
+# Replace Startup Variables
+MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
+echo -e ":/home/container$ ${MODIFIED_STARTUP}"
+
+# Run the Server
+eval ${MODIFIED_STARTUP}
