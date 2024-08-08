@@ -17,7 +17,7 @@ ENV USER=container \
 
 # install core os
 RUN apt update && apt upgrade -y \
-    && apt install -y git wget curl tar zip unzip binutils xz-utils liblzo2-2 cabextract iproute2 net-tools \
+    && apt install -y git wget curl tar zip unzip binutils cabextract iproute2 net-tools \
     gnupg2 apt-transport-https software-properties-common ca-certificates tzdata locales \
     && update-locale lang=en_US.UTF-8 \
     && dpkg-reconfigure --frontend noninteractive locales \
