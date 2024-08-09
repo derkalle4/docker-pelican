@@ -6,6 +6,7 @@ LABEL org.opencontainers.image.licenses=GPLv3
 # OS environment
 ENV USER=container \
     HOME=/home/container \
+    WINEARCH=win32 \
     WINEPREFIX="/home/container/.wine_bfbc2" \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
@@ -16,7 +17,7 @@ ENV USER=container \
 
 # install core os
 RUN apt update \
-    && apt install -y git wget curl tar zip unzip binutils cabextract iproute2 net-tools \
+    && apt install -y git wget curl tar zip unzip binutils iproute2 net-tools \
     gnupg2 apt-transport-https software-properties-common ca-certificates tzdata locales \
     && update-locale lang=en_US.UTF-8 \
     && dpkg-reconfigure --frontend noninteractive locales \
@@ -37,9 +38,6 @@ RUN mkdir -pm755 /etc/apt/keyrings \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources \
     && apt update && apt install -y winehq-stable
-
-RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks \
-    && chmod +x /bin/winetricks
 
 USER container
 WORKDIR /home/container
