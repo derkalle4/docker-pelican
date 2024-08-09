@@ -1,0 +1,44 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2024-08-09T09:01:55+00:00",
+    "name": "ProCON Layer Server",
+    "author": "support@kandru.de",
+    "uuid": "c207fbcc-fe64-4e39-a867-012414cbf506",
+    "description": "Dockered ProCON Layer Server for the Battlefield series",
+    "features": [],
+    "docker_images": {
+        "docker-pelican-procon (latest)": "ghcr.io\/derkalle4\/docker-pelican-procon:latest"
+    },
+    "file_denylist": [],
+    "startup": "mono PRoCon.Console.exe",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"Running...\"\n}",
+        "logs": "{}",
+        "stop": "q"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# The wine generic server installer\r\n# This will just pull a download link and unpack it in directory if specified.\r\n\r\napt update -y\r\napt install -y curl file unzip\r\n\r\nif [ ! -d \/mnt\/server ]; then\r\n    mkdir -p \/mnt\/server\/\r\nfi\r\n\r\ncd \/mnt\/server\/\r\n\r\n# delete old data\r\nrm -r \/mnt\/server\/*\r\n\r\n# validate server link\r\nif [ ! -z \"${DOWNLOAD_URL}\" ]; then \r\n    if curl --output \/dev\/null --silent --head --fail ${DOWNLOAD_URL}; then\r\n        echo -e \"link is valid. setting download link to ${DOWNLOAD_URL}\"\r\n        DOWNLOAD_LINK=${DOWNLOAD_URL}\r\n    else        \r\n        echo -e \"link is invalid closing out\"\r\n        exit 2\r\n    fi\r\nfi\r\n\r\ncurl -sSL# ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*\/}\r\n\r\n# unpack servver files\r\nFILETYPE=$(file -F ',' ${DOWNLOAD_LINK##*\/} | cut -d',' -f2 | cut -d' ' -f2)\r\n\r\nif [ \"$FILETYPE\" == \"gzip\" ]; then\r\n    tar xzvf ${DOWNLOAD_LINK##*\/}\r\nelif [ \"$FILETYPE\" == \"Zip\" ]; then\r\n    unzip -o ${DOWNLOAD_LINK##*\/}\r\nelif [ \"$FILETYPE\" == \"XZ\" ]; then\r\n    tar xvf ${DOWNLOAD_LINK##*\/}\r\nelse\r\n    echo -e \"unknown filetype. Exiting\"\r\n    exit 2 \r\nfi\r\n\r\nrm ${DOWNLOAD_LINK##*\/}\r\n\r\n## install end\r\necho \"-----------------------------------------\"\r\necho \"Installation completed...\"\r\necho \"-----------------------------------------\"",
+            "container": "ghcr.io\/parkervcp\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "sort": 1,
+            "name": "ProCON Download URL",
+            "description": "URL with a .zip file which conains the original procon files (download from the original procon page and upload somehwere).",
+            "env_variable": "DOWNLOAD_URL",
+            "default_value": "https:\/\/changeme\/downloads\/procon_v1.5.4.0.zip",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        }
+    ]
+}
