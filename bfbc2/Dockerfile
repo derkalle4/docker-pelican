@@ -28,8 +28,6 @@ RUN dpkg --add-architecture i386 \
     && apt update && apt install -y \
         xvfb \
         libgl1-mesa-glx:i386 \
-        vulkan-drivers \
-        vulkan-tools \
         winbind \
         x11-apps \
         imagemagick \
@@ -39,7 +37,7 @@ RUN dpkg --add-architecture i386 \
 RUN mkdir -pm755 /etc/apt/keyrings \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources \
-    && apt update && apt install -y winehq-stable
+    && apt update && apt install -y winehq-stable dotnet-sdk-8.0
 
 USER container
 WORKDIR /home/container
