@@ -24,7 +24,7 @@ RUN apt update \
 
 # install gameserver os requirements
 RUN dpkg --add-architecture i386 \
-    && apt update && apt upgrade -y \
+    && apt update && apt install -y \
         xvfb \
         libgl1-mesa-glx:i386 \
         ca-certificates \
