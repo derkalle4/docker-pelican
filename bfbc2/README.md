@@ -1,3 +1,6 @@
+# Pelican / Pterodactyl Battlefield Bad Company 2 Dedicated Server
+
+This egg allows one to host a Battlefield Bad Company 2 Server within the Pelican or Pterodactyl Panel. I've created a docker container (~3.67GB currently), will be optimized in future and an automatically created wine-environment for the game itself. Total size including server-files around 1GB.
 
 ## FAQ
 
