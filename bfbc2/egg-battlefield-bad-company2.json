@@ -1,0 +1,86 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "name": "Battlefield Bad Company 2",
+    "author": "support@kandru.de",
+    "description": "Dockered Battlefield Bad Company 2 server",
+    "features": [],
+    "docker_images": {
+        "docker-pelican-bfbc2 (latest)": "ghcr.io\/derkalle4\/docker-pelican-bfbc2:latest"
+    },
+    "file_denylist": [],
+    "startup": "rm \/home\/container\/instance\/*.log || true && wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance -mapPack2Enabled 1 -port 0.0.0.0:{{SERVER_PORT}} -remoteAdminPort 0.0.0.0:{{SERVER_QUERY_PORT}} -timeStampLogNames -region {{SERVER_REGION}} -heartBeatInterval 20000 -displayErrors 0 -displayAsserts 0 -crashDumpAsserts 0 -plasmaServerLog 0 -crashDumpErrors 0 -Server.ThreadingEnable true -Core.JobProcessorCount 2",
+    "config": {
+        "files": "{\n    \"instance\/ServerOptions.ini\": {\n        \"parser\": \"ini\",\n        \"find\": {\n            \"Options.Name\": \"{{server.environment.SERVER_NAME}}\",\n            \"Options.Port\": \"{{server.allocations.default.port}}\",\n            \"Options.RemoteAdminPort\": \"{{server.environment.SERVER_QUERY_PORT}}\",\n            \"Options.RemoteAdminPassword\": \"{{server.environment.SERVER_RCON_PASSWORD}}\"\n        }\n    },\n    \"instance\/AdminScripts\/Startup.txt\": {\n        \"parser\": \"file\",\n        \"find\": {\n            \"admin.password\": \"admin.password \\\"{{server.environment.SERVER_RCON_PASSWORD}}\\\"\",\n            \"vars.serverName\": \"vars.serverName \\\"{{server.environment.SERVER_NAME}}\\\"\"\n        }\n    }\n}",
+        "startup": "{\n    \"done\": \"Frost.Game.Main_Win32_Final.exe\"\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# The wine generic server installer\r\n# This will just pull a download link and unpack it in directory if specified.\r\n\r\napt update -y\r\napt install -y curl file unzip\r\n\r\nif [ ! -d \/mnt\/server ]; then\r\n    mkdir -p \/mnt\/server\/\r\nfi\r\n\r\ncd \/mnt\/server\/\r\n\r\n# delete old data\r\nrm -r \/mnt\/server\/*\r\n\r\n# validate server link\r\nif [ ! -z \"${DOWNLOAD_URL}\" ]; then \r\n    if curl --output \/dev\/null --silent --head --fail ${DOWNLOAD_URL}; then\r\n        echo -e \"link is valid. setting download link to ${DOWNLOAD_URL}\"\r\n        DOWNLOAD_LINK=${DOWNLOAD_URL}\r\n    else        \r\n        echo -e \"link is invalid closing out\"\r\n        exit 2\r\n    fi\r\nfi\r\n\r\ncurl -sSL# ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*\/}\r\n\r\n# unpack servver files\r\nFILETYPE=$(file -F ',' ${DOWNLOAD_LINK##*\/} | cut -d',' -f2 | cut -d' ' -f2)\r\n\r\nif [ \"$FILETYPE\" == \"gzip\" ]; then\r\n    tar xzvf ${DOWNLOAD_LINK##*\/}\r\nelif [ \"$FILETYPE\" == \"Zip\" ]; then\r\n    unzip -o ${DOWNLOAD_LINK##*\/}\r\nelif [ \"$FILETYPE\" == \"XZ\" ]; then\r\n    tar xvf ${DOWNLOAD_LINK##*\/}\r\nelse\r\n    echo -e \"unknown filetype. Exiting\"\r\n    exit 2 \r\nfi\r\n\r\nrm ${DOWNLOAD_LINK##*\/}\r\n\r\n## install end\r\necho \"-----------------------------------------\"\r\necho \"Installation completed...\"\r\necho \"-----------------------------------------\"",
+            "container": "ghcr.io\/parkervcp\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "sort": 1,
+            "name": "Server Download URL",
+            "description": "URL with a .zip file which conains the server files.",
+            "env_variable": "DOWNLOAD_URL",
+            "default_value": "https:\/\/changeme\/bfbc2_server.zip",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "sort": 2,
+            "name": "Server Region",
+            "description": "server region - e.g. EU or NA",
+            "env_variable": "SERVER_REGION",
+            "default_value": "EU",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|min:2|max:3",
+            "field_type": "text"
+        },
+        {
+            "sort": 3,
+            "name": "Server RCON Password",
+            "description": "Remote-Administration password. Should be set to something secure.",
+            "env_variable": "SERVER_RCON_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|min:2|max:20",
+            "field_type": "text"
+        },
+        {
+            "sort": 4,
+            "name": "Server Name",
+            "description": "Name of the Server for the ingame server browser",
+            "env_variable": "SERVER_NAME",
+            "default_value": "battlefield server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|min:6|max:40",
+            "field_type": "text"
+        },
+        {
+            "sort": 5,
+            "name": "Server Query Port",
+            "description": "",
+            "env_variable": "SERVER_QUERY_PORT",
+            "default_value": "25200",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|Integer|min:1024|max:65535",
+            "field_type": "text"
+        }
+    ]
+}
