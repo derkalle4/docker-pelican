@@ -28,6 +28,8 @@ RUN dpkg --add-architecture i386 \
     && apt update && apt install -y \
         xvfb \
         libgl1-mesa-glx:i386 \
+        vulkan-drivers \
+        vulkan-tools \
         winbind \
         x11-apps \
         imagemagick \
