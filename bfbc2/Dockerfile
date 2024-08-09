@@ -27,8 +27,6 @@ RUN dpkg --add-architecture i386 \
     && apt update && apt install -y \
         xvfb \
         libgl1-mesa-glx:i386 \
-        ca-certificates \
-        unrar \
         winbind \
         x11-apps \
         imagemagick \
