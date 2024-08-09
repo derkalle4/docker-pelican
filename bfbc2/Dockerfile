@@ -6,7 +6,6 @@ LABEL org.opencontainers.image.licenses=GPLv3
 # OS environment
 ENV USER=container \
     HOME=/home/container \
-    WINEARCH=win64 \
     WINEPREFIX="/home/container/.wine_bfbc2" \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
@@ -16,7 +15,7 @@ ENV USER=container \
     DEBIAN_FRONTEND=noninteractive
 
 # install core os
-RUN apt update && apt upgrade -y \
+RUN apt update \
     && apt install -y git wget curl tar zip unzip binutils cabextract iproute2 net-tools \
     gnupg2 apt-transport-https software-properties-common ca-certificates tzdata locales \
     && update-locale lang=en_US.UTF-8 \
@@ -46,20 +45,6 @@ RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/wine
 
 USER container
 WORKDIR /home/container
-
-# install gameserver wine requirements
-RUN mkdir -p /home/container/ \
-    && wineboot --init \
-    && xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" winetricks -q \
-        dinput8 \
-        vcrun2005 \
-        vcrun2008 \
-        vcrun2010 \
-        dotnet35
-
-RUN wget https://dl.winehq.org/wine/wine-mono/9.2.0/wine-mono-9.2.0-x86.msi -O /home/container/wine-mono.msi \
-    && msiexec /i /home/container/wine-mono.msi \
-    && rm /home/container/wine-mono.msi
 
 COPY ./bin/entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
