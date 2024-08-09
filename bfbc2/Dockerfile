@@ -6,11 +6,11 @@ LABEL org.opencontainers.image.licenses=GPLv3
 # OS environment
 ENV USER=container \
     HOME=/home/container \
-    WINEARCH=win32 \
-    WINEPREFIX="/home/container/.wine" \
+    WINEARCH=win64 \
+    WINEPREFIX="/home/container/.wine_bfbc2" \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
-    DISPLAY_HEIGHT=1024 \
+    DISPLAY_HEIGHT=720 \
     DISPLAY_DEPTH=24 \
     XVFB=1 \
     DEBIAN_FRONTEND=noninteractive
@@ -49,12 +49,13 @@ WORKDIR /home/container
 
 # install gameserver wine requirements
 RUN mkdir -p /home/container/ \
-    && wineboot \
+    && wineboot --init \
     && xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" winetricks -q \
         dinput8 \
         vcrun2005 \
         vcrun2008 \
-        vcrun2010
+        vcrun2010 \
+        dotnet35
 
 RUN wget https://dl.winehq.org/wine/wine-mono/9.2.0/wine-mono-9.2.0-x86.msi -O /home/container/wine-mono.msi \
     && msiexec /i /home/container/wine-mono.msi \
