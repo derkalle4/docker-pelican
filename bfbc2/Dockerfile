@@ -9,6 +9,7 @@ ENV USER=container \
     WINEARCH=win64 \
     WINEPREFIX="/home/container/.wine_bfbc2" \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
+    WINEDEBUG=-all \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
     DISPLAY_HEIGHT=720 \
@@ -29,6 +30,7 @@ RUN dpkg --add-architecture i386 \
     && apt update && apt install -y \
         xvfb \
         libgl1-mesa-glx:i386 \
+        winbind \
     && apt clean
 
 # install latest WINE
@@ -46,6 +48,9 @@ WORKDIR /home/container
 
 # install bfbc2 dependencies
 RUN xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" /bin/winetricks -q dinput8 vcrun2005 vcrun2008 vcrun2010
+
+# remove unnecessary cache data
+RUN rm -rf /home/container/.cache/
 
 COPY ./bin/entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
