@@ -6,7 +6,7 @@ LABEL org.opencontainers.image.licenses=GPLv3
 # OS environment
 ENV USER=container \
     HOME=/home/container \
-    WINEARCH=win64 \
+    WINEARCH=win32 \
     WINEPREFIX="/home/container/.wine_bfbc2" \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
@@ -37,7 +37,7 @@ RUN dpkg --add-architecture i386 \
 RUN mkdir -pm755 /etc/apt/keyrings \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources \
-    && apt update && apt install -y winehq-stable dotnet-sdk-8.0
+    && apt update && apt install -y winehq-stable
 
 USER container
 WORKDIR /home/container
