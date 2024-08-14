@@ -8,6 +8,7 @@ ENV USER=container \
     HOME=/home/container \
     WINEARCH=win32 \
     WINEPREFIX="/home/container/.wine_bfbc2" \
+    WINEDLLOVERRIDES="mscoree,mshtml=" \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
     DISPLAY_HEIGHT=720 \
@@ -17,7 +18,7 @@ ENV USER=container \
 
 # install core os
 RUN apt update \
-    && apt install -y git wget curl tar zip unzip binutils iproute2 net-tools \
+    && apt install -y git wget curl cabextract binutils iproute2 net-tools \
     gnupg2 apt-transport-https software-properties-common ca-certificates tzdata locales \
     && update-locale lang=en_US.UTF-8 \
     && dpkg-reconfigure --frontend noninteractive locales \
