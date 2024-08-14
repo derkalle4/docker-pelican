@@ -19,7 +19,7 @@ ENV USER=container \
 
 # install core os
 RUN apt update \
-    && apt install -y git wget cabextract binutils iproute2 net-tools \
+    && apt install --no-install-recommends -y git wget cabextract binutils iproute2 net-tools \
     gnupg2 apt-transport-https software-properties-common ca-certificates tzdata locales \
     && update-locale lang=en_US.UTF-8 \
     && dpkg-reconfigure --frontend noninteractive locales \
@@ -27,7 +27,7 @@ RUN apt update \
 
 # install gameserver os requirements
 RUN dpkg --add-architecture i386 \
-    && apt update && apt install -y \
+    && apt update && apt install --no-install-recommends -y \
         xvfb \
         libgl1-mesa-glx:i386 \
         winbind \
@@ -37,20 +37,13 @@ RUN dpkg --add-architecture i386 \
 RUN mkdir -pm755 /etc/apt/keyrings \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources \
-    && apt update && apt install -y winehq-stable
+    && apt update && apt install --no-install-recommends -y winehq-stable
 
-# install winetricks
-RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks \
-    && chmod +x /bin/winetricks
+# remove apt cache data
+RUN rm -rf /var/lib/apt/lists/*
 
 USER container
 WORKDIR /home/container
-
-# install bfbc2 dependencies
-RUN xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" /bin/winetricks -q dinput8 vcrun2005 vcrun2008 vcrun2010
-
-# remove unnecessary cache data
-RUN rm -rf /home/container/.cache/
 
 COPY ./bin/entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
