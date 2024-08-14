@@ -31,6 +31,7 @@ RUN dpkg --add-architecture i386 \
         xvfb \
         libgl1-mesa-glx:i386 \
         winbind \
+        screen \
     && apt clean
 
 # install latest WINE
