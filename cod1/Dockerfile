@@ -1,4 +1,4 @@
-FROM --platform=$TARGETOS/$TARGETARCH debian:bookworm-slim
+FROM --platform=$TARGETOS/$TARGETARCH ubuntu:jammy
 
 LABEL author="Kalle Minkner" maintainer="support@kandru.de"
 LABEL org.opencontainers.image.licenses=GPLv3
