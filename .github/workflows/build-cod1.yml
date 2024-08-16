@@ -1,0 +1,28 @@
+name: deploy COD1 to ghcr.io
+on:
+  push:
+    paths:
+      - cod1/**
+  workflow_dispatch:
+jobs:
+  docker-cod1:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: './cod1'
+    steps:
+      - name: 'Checkout Source Code'
+        uses: actions/checkout@main
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+      - name: 'Build and Deploy Docker Container'
+        run: |
+          docker build . --tag ghcr.io/derkalle4/docker-pelican-cod1:latest
+          docker push ghcr.io/derkalle4/docker-pelican-cod1:latest
