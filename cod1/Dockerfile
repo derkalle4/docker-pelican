@@ -31,6 +31,8 @@ RUN dpkg --add-architecture i386 \
         xvfb \
         libgl1-mesa-glx:i386 \
         mesa-vulkan-drivers:i386 \
+        imagemagick \
+        x11-apps \
         winbind \
         screen \
     && apt clean
