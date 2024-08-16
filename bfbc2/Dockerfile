@@ -1,4 +1,4 @@
-FROM --platform=$TARGETOS/$TARGETARCH ubuntu:jammy
+FROM --platform=$TARGETOS/$TARGETARCH debian:bookworm-slim
 
 LABEL author="Kalle Minkner" maintainer="support@kandru.de"
 LABEL org.opencontainers.image.licenses=GPLv3
@@ -37,7 +37,7 @@ RUN dpkg --add-architecture i386 \
 # install latest WINE
 RUN mkdir -pm755 /etc/apt/keyrings \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
-    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources \
+    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources \
     && apt update && apt install --no-install-recommends -y winehq-stable
 
 # remove apt cache data
