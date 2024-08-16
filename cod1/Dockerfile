@@ -11,7 +11,7 @@ ENV USER=container \
 
 # install core os
 RUN apt update \
-    && apt install --no-install-recommends -y wget binutils iproute2 net-tools \
+    && apt install --no-install-recommends -y wget binutils iproute2 net-tools dos2unix \
     gnupg2 apt-transport-https software-properties-common ca-certificates tzdata locales \
     && update-locale lang=en_US.UTF-8 \
     && dpkg-reconfigure --frontend noninteractive locales \
