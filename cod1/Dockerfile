@@ -6,7 +6,6 @@ LABEL org.opencontainers.image.licenses=GPLv3
 # OS environment
 ENV USER=container \
     HOME=/home/container \
-    LD_PRELOAD=/home/container/codextended.so \
     DEBIAN_FRONTEND=noninteractive
 
 # install core os
