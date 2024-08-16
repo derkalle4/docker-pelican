@@ -1,4 +1,4 @@
-FROM --platform=$TARGETOS/$TARGETARCH ubuntu:jammy
+FROM --platform=$TARGETOS/$TARGETARCH bookworm-slim
 
 LABEL author="Kalle Minkner" maintainer="support@kandru.de"
 LABEL org.opencontainers.image.licenses=GPLv3
@@ -11,7 +11,7 @@ ENV USER=container \
 
 # install core os
 RUN apt update \
-    && apt install --no-install-recommends -y wget binutils iproute2 net-tools dos2unix \
+    && apt install --no-install-recommends -y wget binutils iproute2 net-tools ia32-libs \
     gnupg2 apt-transport-https software-properties-common ca-certificates tzdata locales \
     && update-locale lang=en_US.UTF-8 \
     && dpkg-reconfigure --frontend noninteractive locales \
