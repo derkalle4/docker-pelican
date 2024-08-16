@@ -30,7 +30,7 @@ RUN dpkg --add-architecture i386 \
     && apt update && apt install --no-install-recommends -y \
         xvfb \
         libgl1-mesa-glx:i386 \
-        mesa-vulkan-drivers \
+        mesa-vulkan-drivers:i386 \
         winbind \
         screen \
     && apt clean
