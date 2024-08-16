@@ -2,7 +2,8 @@ name: deploy COD1 to ghcr.io
 on:
   push:
     paths:
-      - cod1/**
+      - cod1/bin/*
+      - cod1/Dockerfile
   workflow_dispatch:
 jobs:
   docker-cod1:

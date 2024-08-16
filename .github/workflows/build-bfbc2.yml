@@ -2,7 +2,8 @@ name: deploy BFBC2 to ghcr.io
 on:
   push:
     paths:
-      - bfbc2/**
+      - bfbc2/bin/*
+      - bfbc2/Dockerfile
   workflow_dispatch:
 jobs:
   docker-bfbc2:
