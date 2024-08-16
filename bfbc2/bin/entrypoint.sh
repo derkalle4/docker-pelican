@@ -5,7 +5,7 @@ cd /home/container
 
 # info output
 echo "Running on:"
-echo "$(cat /etc/lsb-release)"
+echo "$(cat /etc/debian_version)"
 echo "Current timezone: $(cat /etc/timezone)"
 wine --version
 
