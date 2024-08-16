@@ -16,7 +16,7 @@
     "startup": "exec env - LD_PRELOAD=$HOME\/codextended.so $HOME\/cod_lnxded +set fs_homepath $HOME +set fs_basepath $HOME +set net_ip 0.0.0.0 +set net_port {{SERVER_PORT}} +exec dedicated.cfg +map mp_harbor < \/dev\/tty\n",
     "config": {
         "files": "{}",
-        "startup": "{\n    \"done\": \"CoDMP.exe\"\n}",
+        "startup": "{\n    \"done\": \"Game Initialization\"\n}",
         "logs": "{}",
         "stop": "quit"
     },
