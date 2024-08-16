@@ -1,4 +1,4 @@
-FROM --platform=$TARGETOS/$TARGETARCH bookworm-slim
+FROM --platform=$TARGETOS/$TARGETARCH debian:bookworm-slim
 
 LABEL author="Kalle Minkner" maintainer="support@kandru.de"
 LABEL org.opencontainers.image.licenses=GPLv3
