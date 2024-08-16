@@ -10,6 +10,8 @@ ENV USER=container \
     WINEPREFIX="/home/container/.wine_cod1" \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
     WINEDEBUG=-all \
+    LIBGL_ALWAYS_SOFTWARE=1 \
+    MESA_VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.i686.json \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
     DISPLAY_HEIGHT=720 \
