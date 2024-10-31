@@ -4,7 +4,7 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2024-08-09T09:01:55+00:00",
+    "exported_at": "2024-10-31T12:10:31+00:00",
     "name": "ProCON Layer Server",
     "author": "support@kandru.de",
     "uuid": "c207fbcc-fe64-4e39-a867-012414cbf506",
@@ -37,8 +37,10 @@
             "default_value": "https:\/\/changeme\/downloads\/procon_v1.5.4.0.zip",
             "user_viewable": false,
             "user_editable": false,
-            "rules": "required|string",
-            "field_type": "text"
+            "rules": [
+                "required",
+                "string"
+            ]
         }
     ]
 }
