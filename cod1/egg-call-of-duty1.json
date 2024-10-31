@@ -4,6 +4,7 @@
         "version": "PTDL_v2",
         "update_url": null
     },
+    "exported_at": "2024-10-31T12:07:17+00:00",
     "name": "Call of Duty 1",
     "author": "support@kandru.de",
     "uuid": "344c7932-7772-489c-8864-c731b9b0e18b",
@@ -36,8 +37,10 @@
             "default_value": "https:\/\/myurl\/call_of_duty_1_server_linux.zip",
             "user_viewable": false,
             "user_editable": false,
-            "rules": "required|string",
-            "field_type": "text"
+            "rules": [
+                "required",
+                "string"
+            ]
         }
     ]
 }
