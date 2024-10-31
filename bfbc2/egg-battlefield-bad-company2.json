@@ -4,8 +4,10 @@
         "version": "PTDL_v2",
         "update_url": null
     },
+    "exported_at": "2024-10-31T12:08:09+00:00",
     "name": "Battlefield Bad Company 2",
     "author": "support@kandru.de",
+    "uuid": "c1f76d2a-3bad-4d96-a705-67dcef86c2b4",
     "description": "Dockered Battlefield Bad Company 2 server",
     "features": [],
     "docker_images": {
@@ -35,8 +37,10 @@
             "default_value": "https:\/\/changeme\/bfbc2_server.zip",
             "user_viewable": false,
             "user_editable": false,
-            "rules": "required|string",
-            "field_type": "text"
+            "rules": [
+                "required",
+                "string"
+            ]
         },
         {
             "sort": 2,
@@ -46,8 +50,12 @@
             "default_value": "EU",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|min:2|max:3",
-            "field_type": "text"
+            "rules": [
+                "required",
+                "string",
+                "min:2",
+                "max:3"
+            ]
         },
         {
             "sort": 3,
@@ -57,8 +65,12 @@
             "default_value": "",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|min:2|max:20",
-            "field_type": "text"
+            "rules": [
+                "required",
+                "string",
+                "min:2",
+                "max:20"
+            ]
         },
         {
             "sort": 4,
@@ -68,8 +80,12 @@
             "default_value": "battlefield server",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|min:6|max:40",
-            "field_type": "text"
+            "rules": [
+                "required",
+                "string",
+                "min:6",
+                "max:40"
+            ]
         },
         {
             "sort": 5,
@@ -79,8 +95,12 @@
             "default_value": "25200",
             "user_viewable": true,
             "user_editable": false,
-            "rules": "required|Integer|min:1024|max:65535",
-            "field_type": "text"
+            "rules": [
+                "required",
+                "Integer",
+                "min:1024",
+                "max:65535"
+            ]
         }
     ]
 }
