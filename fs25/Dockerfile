@@ -35,6 +35,7 @@ RUN dpkg --add-architecture i386 \
         socat \
         x11-apps \
         imagemagick \
+        xdotool \
     && apt clean
 
 # install latest WINE
