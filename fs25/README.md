@@ -20,3 +20,7 @@ After the first start the game is awaiting keyboard input to set a CD key. You c
 
 xdotool type --delay 100 "MY-KEY"
 xdotool key "Return"
+
+#### how can I start the VNC session?
+
+x11vnc -display :0 -rfbport 10824 -noxrecord -forever -passwd 123456
