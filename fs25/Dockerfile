@@ -29,6 +29,7 @@ RUN apt update \
 RUN dpkg --add-architecture i386 \
     && apt update && apt install --no-install-recommends -y \
         xvfb \
+        x11vnc \
         libgl1-mesa-glx:i386 \
         winbind \
         screen \
