@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses=GPLv3
 ENV USER=container \
     HOME=/home/container \
     WINEARCH=win64 \
-    WINEPREFIX="/home/container/.wine_bfbc2" \
+    WINEPREFIX="/home/container/.wine_fs25" \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
     WINEDEBUG=-all \
     DISPLAY=:0 \

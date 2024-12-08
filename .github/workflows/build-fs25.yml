@@ -1,9 +1,9 @@
-name: deploy BFBC2 to ghcr.io
+name: deploy FS25 to ghcr.io
 on:
   push:
     paths:
-      - bfbc2/bin/*
-      - bfbc2/Dockerfile
+      - fs25/bin/*
+      - fs25/Dockerfile
   workflow_dispatch:
 jobs:
   docker-bfbc2:
@@ -13,7 +13,7 @@ jobs:
       packages: write
     defaults:
       run:
-        working-directory: './bfbc2'
+        working-directory: './fs25'
     steps:
       - name: 'Checkout Source Code'
         uses: actions/checkout@main
@@ -25,5 +25,5 @@ jobs:
           password: ${{secrets.GITHUB_TOKEN}}
       - name: 'Build and Deploy Docker Container'
         run: |
-          docker build . --tag ghcr.io/derkalle4/docker-pelican-bfbc2:latest
-          docker push ghcr.io/derkalle4/docker-pelican-bfbc2:latest
+          docker build . --tag ghcr.io/derkalle4/docker-pelican-fs25:latest
+          docker push ghcr.io/derkalle4/docker-pelican-fs25:latest
