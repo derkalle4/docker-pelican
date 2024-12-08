@@ -33,6 +33,8 @@ RUN dpkg --add-architecture i386 \
         winbind \
         screen \
         socat \
+        x11-apps \
+        imagemagick \
     && apt clean
 
 # install latest WINE
