@@ -6,7 +6,7 @@ on:
       - fs25/Dockerfile
   workflow_dispatch:
 jobs:
-  docker-bfbc2:
+  docker-fs25:
     runs-on: ubuntu-latest
     permissions:
       contents: read
