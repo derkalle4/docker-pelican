@@ -1,40 +1,22 @@
-# Pelican / Pterodactyl Battlefield Bad Company 2 Dedicated Server
+# Pelican / Pterodactyl Farm Simulator 2025 dedicated server
 
-This egg allows one to host a Battlefield Bad Company 2 Server within the Pelican or Pterodactyl Panel. I've created a docker container (~3.67GB currently), will be optimized in future and an automatically created wine-environment for the game itself. Total size including server-files around 1GB.
+This egg allows one to host a Farm Simulator 2025 Server within the Pelican or Pterodactyl Panel.
 
 ## FAQ
 
-#### where do I find the battlfield bad company 2 server files?
+#### where do I find the Farm Simulator 2025 server files?
 
-Search the internet. I do not provide them to you. Please do not ask!
+Buy them from their website. Steam is not supported.
 
-#### How does the egg install the game server files?
+#### how can I see what happens on the server gui?
 
-You have to upload the game server files as a .zip file somewhere and fill in the environemnt variable of the egg. The installation script will automatically download and extract the files for you. It would be more optimized to include the dedicated server files within the docker container. But to avoid legal consequences I won't do this.
+Take a screenshot:
 
-The .zip file should contain the following files and folders:
+xwd -display :0 -root -silent | convert xwd:- png:/home/container/screenshot.png
 
-- dist (folder)
-- instance (folder)
-- Scripts (folder)
-- binkw32.dll
-- branch.txt
-- changelist_bin.txt
-- changelist_data.txt
-- D3DCompiler_42.dll
-- d3dx10_42.dll
-- d3dx11_42.dll
-- D3DX9_42.dll
-- database.dbmanifest
-- DejaDLL.Win32.dll
-- dinput8.dll
-- Frost.Game.Main_Win32_Final.exe
-- info.txt
-- launcher.ini
-- launcher.log
-- libeay32.dll
-- ProviderID.dat
-- ssleay32.dll
-- tibems.dll
-- Win32Game.cfg
-- zlib1.dll
+#### how can I add the key via the command line?
+
+After the first start the game is awaiting keyboard input to set a CD key. You can enter this key with:
+
+xdotool type --delay 100 "MY-KEY"
+xdotool key "Return"
