@@ -4,7 +4,10 @@ LABEL author="Kalle Minkner" maintainer="support@kandru.de"
 LABEL org.opencontainers.image.licenses=GPLv3
 
 # Install dependencies
-RUN apt-get update && apt-get install -y unixodbc && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    unixodbc \
+    libmyodbc \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # OS environment
 ENV USER=container \
