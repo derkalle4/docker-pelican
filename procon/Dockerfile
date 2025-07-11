@@ -6,7 +6,7 @@ LABEL org.opencontainers.image.licenses=GPLv3
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     unixodbc \
-    libmyodbc \
+    odbc-mysql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # OS environment
