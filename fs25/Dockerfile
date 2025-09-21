@@ -1,6 +1,6 @@
 FROM --platform=$TARGETOS/$TARGETARCH debian:bookworm-slim
 
-LABEL author="Kalle Minkner" maintainer="support@kandru.de"
+LABEL author="Kalle" maintainer="support@kandru.de"
 LABEL org.opencontainers.image.licenses=GPLv3
 
 # OS environment
