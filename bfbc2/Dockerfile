@@ -13,7 +13,7 @@ ENV USER=container \
     LC_ALL=en_US.UTF-8 \
     WINEARCH=win32 \
     WINEPREFIX=/home/container/.wine_bfbc2 \
-    WINEDLLOVERRIDES="mscoree,mshtml=" \
+    WINEDLLOVERRIDES="dinput8=n,b;mscoree,mshtml=" \
     WINEDEBUG=-all \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
