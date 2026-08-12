@@ -1,13 +1,18 @@
-FROM --platform=$TARGETOS/$TARGETARCH debian:bookworm-slim
+FROM debian:bookworm-slim
 
-LABEL author="Kalle" maintainer="support@kandru.de"
-LABEL org.opencontainers.image.licenses=GPLv3
+LABEL author="Kalle" \
+      maintainer="support@kandru.de" \
+      org.opencontainers.image.licenses="GPLv3"
 
-# OS environment
+ARG DEBIAN_FRONTEND=noninteractive
+
 ENV USER=container \
     HOME=/home/container \
-    WINEARCH=win64 \
-    WINEPREFIX="/home/container/.wine_bfbc2" \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    WINEARCH=win32 \
+    WINEPREFIX=/home/container/.wine_bfbc2 \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
     WINEDEBUG=-all \
     DISPLAY=:0 \
@@ -17,34 +22,80 @@ ENV USER=container \
     XVFB=1 \
     DEBIAN_FRONTEND=noninteractive
 
-# install core os
-RUN apt update \
-    && apt install --no-install-recommends -y wget binutils iproute2 net-tools \
-    gnupg2 apt-transport-https software-properties-common ca-certificates tzdata locales \
-    && update-locale lang=en_US.UTF-8 \
-    && dpkg-reconfigure --frontend noninteractive locales \
-    && useradd -m -d /home/container -s /bin/bash container
-
-# install gameserver os requirements
+# Enable i386 packages, Debian contrib, and install base packages
 RUN dpkg --add-architecture i386 \
-    && apt update && apt install --no-install-recommends -y \
-        xvfb \
-        libgl1-mesa-glx:i386 \
-        winbind \
+    && if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+         sed -i \
+           's/^Components: main$/Components: main contrib non-free non-free-firmware/' \
+           /etc/apt/sources.list.d/debian.sources; \
+       elif [ -f /etc/apt/sources.list ]; then \
+         sed -i \
+           's/ main$/ main contrib non-free non-free-firmware/' \
+           /etc/apt/sources.list; \
+       fi \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y \
+        apt-transport-https \
+        bash \
+        ca-certificates \
+        cabextract \
+        dbus \
+        gnupg2 \
+        iproute2 \
+        locales \
+        net-tools \
+        passwd \
+        p7zip-full \
         screen \
-    && apt clean
+        tzdata \
+        unzip \
+        wget \
+        winbind \
+        xauth \
+        xvfb \
+    && sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+    && useradd \
+        --create-home \
+        --home-dir /home/container \
+        --shell /bin/bash \
+        container \
+    && mkdir -p /home/container/.wine_bfbc2 \
+    && chown -R container:container /home/container \
+    && rm -rf /var/lib/apt/lists/*
 
-# install latest WINE
-RUN mkdir -pm755 /etc/apt/keyrings \
-    && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
-    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources \
-    && apt update && apt install --no-install-recommends -y winehq-stable
+# Add the official WineHQ repository
+RUN mkdir -p -m 0755 /etc/apt/keyrings \
+    && wget -O /etc/apt/keyrings/winehq-archive.key \
+        https://dl.winehq.org/wine-builds/winehq.key \
+    && wget -NP /etc/apt/sources.list.d/ \
+        https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources
 
-# remove apt cache data
-RUN rm -rf /var/lib/apt/lists/*
+# Install WineHQ and Winetricks
+RUN apt-get update \
+    && apt-get install --install-recommends -y \
+        winehq-stable \
+        winetricks \
+    && wine --version \
+    && winetricks --version \
+    && rm -rf /var/lib/apt/lists/*
 
 USER container
+
 WORKDIR /home/container
 
-COPY ./bin/entrypoint.sh /entrypoint.sh
-CMD [ "/bin/bash", "/entrypoint.sh" ]
+# Initialize a clean 32-bit Wine prefix and install Visual C++ 2010 runtime
+RUN xvfb-run -a \
+        -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" \
+        wineboot --init \
+    && xvfb-run -a \
+        -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" \
+        winetricks -q vcrun2010 \
+    && wineserver -k
+
+COPY --chown=container:container ./bin/entrypoint.sh /entrypoint.sh
+
+RUN chmod 0755 /entrypoint.sh
+
+CMD ["/bin/bash", "/entrypoint.sh"]
