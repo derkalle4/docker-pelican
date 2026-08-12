@@ -40,6 +40,7 @@ RUN dpkg --add-architecture i386 \
         ca-certificates \
         cabextract \
         dbus \
+        file \
         gnupg2 \
         iproute2 \
         locales \
@@ -85,13 +86,21 @@ USER container
 
 WORKDIR /home/container
 
-# Initialize a clean 32-bit Wine prefix and install Visual C++ 2010 runtime
+ENV WINEARCH=win32 \
+    WINEPREFIX=/home/container/.wine_bfbc2
+
+# Initialize Wine and install the BFBC2 runtime components
 RUN xvfb-run -a \
         -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" \
         wineboot --init \
     && xvfb-run -a \
         -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" \
-        winetricks -q vcrun2010 \
+        winetricks -q \
+            dinput8 \
+            vcrun2005 \
+            vcrun2008 \
+            vcrun2010 \
+    && test -f "${WINEPREFIX}/winetricks.log" \
     && wineserver -k
 
 COPY --chown=container:container ./bin/entrypoint.sh /entrypoint.sh
