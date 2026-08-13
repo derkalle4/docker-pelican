@@ -6,6 +6,13 @@ cd /home/container
 
 export DISPLAY="${DISPLAY:-:0}"
 
+INSTANCE_DIR="${INSTANCE_DIR:-/home/container/instance}"
+LOG_WAIT_SECONDS="${LOG_WAIT_SECONDS:-10}"
+
+SERVER_PID=""
+TAIL_PID=""
+XVFB_PID=""
+
 log() {
     echo "$*"
 }
@@ -40,14 +47,51 @@ resolve_startup() {
     printf '%b' "${startup_raw}" | sed -e 's/{{/${/g' -e 's/}}/}/g'
 }
 
+cleanup_instance_artifacts() {
+    rm -f "${INSTANCE_DIR}"/*.log "${INSTANCE_DIR}"/*.dmp 2>/dev/null || true
+}
+
+wait_for_instance_log() {
+    local i count
+    local -a logs
+
+    for ((i = 1; i <= LOG_WAIT_SECONDS; i++)); do
+        mapfile -t logs < <(find "${INSTANCE_DIR}" -maxdepth 1 -name '*.log' -type f 2>/dev/null | sort)
+        count=${#logs[@]}
+        if [[ "${count}" -eq 1 ]]; then
+            printf '%s\n' "${logs[0]}"
+            return 0
+        fi
+        sleep 1
+    done
+
+    return 1
+}
+
 cleanup() {
-    if [[ -n "${XVFB_PID:-}" ]] && kill -0 "${XVFB_PID}" 2>/dev/null; then
+    if [[ -n "${TAIL_PID}" ]] && kill -0 "${TAIL_PID}" 2>/dev/null; then
+        kill "${TAIL_PID}" 2>/dev/null || true
+        wait "${TAIL_PID}" 2>/dev/null || true
+    fi
+
+    if [[ -n "${SERVER_PID}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
+        kill -INT "${SERVER_PID}" 2>/dev/null || true
+        wait "${SERVER_PID}" 2>/dev/null || true
+    fi
+
+    if [[ -n "${XVFB_PID}" ]] && kill -0 "${XVFB_PID}" 2>/dev/null; then
         kill "${XVFB_PID}" 2>/dev/null || true
         wait "${XVFB_PID}" 2>/dev/null || true
     fi
 }
 
-trap cleanup EXIT INT TERM
+on_signal() {
+    cleanup
+    exit 130
+}
+
+trap cleanup EXIT
+trap on_signal INT TERM
 
 log "Running on:"
 [[ -f /etc/debian_version ]] && cat /etc/debian_version
@@ -62,8 +106,34 @@ log "Display: ${DISPLAY}"
 
 start_xvfb
 
+cleanup_instance_artifacts
+
 STARTUP_COMMAND="$(resolve_startup)"
 log "Running:"
 log "${STARTUP_COMMAND}"
 
-exec bash -c "${STARTUP_COMMAND}"
+bash -c "${STARTUP_COMMAND}" &
+SERVER_PID=$!
+
+LOG_FILE=""
+if LOG_FILE="$(wait_for_instance_log)"; then
+    log "Tailing ${LOG_FILE}"
+    tail -n +1 -F "${LOG_FILE}" &
+    TAIL_PID=$!
+else
+    log "No single instance/*.log within ${LOG_WAIT_SECONDS}s; continuing without tail."
+fi
+
+set +e
+wait "${SERVER_PID}"
+EXIT_CODE=$?
+set -e
+
+if [[ -n "${TAIL_PID}" ]] && kill -0 "${TAIL_PID}" 2>/dev/null; then
+    kill "${TAIL_PID}" 2>/dev/null || true
+    wait "${TAIL_PID}" 2>/dev/null || true
+    TAIL_PID=""
+fi
+
+SERVER_PID=""
+exit "${EXIT_CODE}"
