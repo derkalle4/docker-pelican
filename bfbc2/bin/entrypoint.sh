@@ -128,6 +128,15 @@ log "Running on:"
 [[ -f /etc/timezone ]] && log "Current timezone: $(cat /etc/timezone)"
 log "Wine version:"
 wine --version
+log "Wine prefix: ${WINEPREFIX:-unset}"
+log "Wine DLL overrides: ${WINEDLLOVERRIDES:-unset}"
+
+if [[ -n "${WINEPREFIX:-}" && -e "${WINEPREFIX}" && ! -O "${WINEPREFIX}" ]]; then
+    log "ERROR: Wine prefix ${WINEPREFIX} is not owned by $(id -un) (uid=$(id -u))."
+    ls -ld "${WINEPREFIX}" || true
+    log "Wine will refuse to start. Reinstall the server so the prefix is recreated."
+    exit 1
+fi
 
 INTERNAL_IP="$(ip route get 1 2>/dev/null | awk '($i=="src"){print $(i+1); exit} {for (i=1; i<=NF; i++) if ($i=="src") {print $(i+1); exit}}')"
 export INTERNAL_IP

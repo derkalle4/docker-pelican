@@ -53,11 +53,8 @@ scripts:
       echo "-----------------------------------------"
       apt install --no-install-recommends -y curl file unzip tar cabextract xvfb xauth winehq-stable winbind
 
-      if [ ! -d /mnt/server ]; then
-          mkdir -p /mnt/server/
-      fi
-
-      chown root:root /mnt/server/
+      mkdir -p /mnt/server/
+      chown -R root:root /mnt/server/
       cd /mnt/server/
 
       echo "-----------------------------------------"
@@ -97,28 +94,53 @@ scripts:
       echo "Install Wine Environment..."
       echo "-----------------------------------------"
 
-      wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks \
-          && chmod +x /bin/winetricks
+      wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks
+      chmod +x /bin/winetricks
 
       export WINEARCH=win32
       export WINEPREFIX="/mnt/server/.wine_bfbc2"
-      export WINEDLLOVERRIDES="dinput8=n,b;mscoree,mshtml="
       export WINEDEBUG=-all
 
-      xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" wineboot --init
+      run_wine() {
+          xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" "$@"
+      }
+
+      echo "Removing stale Wine prefix (wrong UID from a previous start/install)..."
+      rm -rf "${WINEPREFIX}"
+      chown -R root:root /mnt/server
+
+      # Suppress Mono/Gecko install prompts during prefix init only.
+      export WINEDLLOVERRIDES="dinput8=n,b;mscoree,mshtml="
+
+      if ! run_wine wineboot --init; then
+          echo "ERROR: wineboot --init failed (prefix must be owned by the installer)."
+          ls -ld "${WINEPREFIX}" /mnt/server || true
+          exit 1
+      fi
 
       echo "Installing Visual C++ runtimes and core fonts..."
-      xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" /bin/winetricks -q \
-          vcrun2005 \
-          vcrun2008 \
-          vcrun2010 \
-          corefonts
+      if ! run_wine /bin/winetricks -q vcrun2005 vcrun2008 vcrun2010 corefonts; then
+          echo "ERROR: winetricks failed"
+          exit 1
+      fi
 
       echo "Installing Wine Mono..."
       wget -O /tmp/wine-mono.msi https://dl.winehq.org/wine/wine-mono/9.4.0/wine-mono-9.4.0-x86.msi
-      xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" wine msiexec /i /tmp/wine-mono.msi /qn
-      wineserver -k
+      if ! run_wine wine msiexec /i /tmp/wine-mono.msi /qn; then
+          echo "ERROR: Wine Mono MSI install failed"
+          ls -ld "${WINEPREFIX}" || true
+          exit 1
+      fi
+      wineserver -k || true
       rm -f /tmp/wine-mono.msi
+
+      if [[ ! -d "${WINEPREFIX}/drive_c/windows/mono" ]]; then
+          echo "ERROR: Wine Mono did not land in ${WINEPREFIX}/drive_c/windows/mono"
+          exit 1
+      fi
+
+      # .NET helpers need mscoree at runtime. Keep dinput8 native for Venice Unleashed.
+      export WINEDLLOVERRIDES="dinput8=n,b;mshtml="
 
       # remove unnecessary cache data
       rm -rf /mnt/server/.cache/ /root/.cache/winetricks/
