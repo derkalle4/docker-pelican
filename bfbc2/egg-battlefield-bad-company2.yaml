@@ -1,0 +1,186 @@
+meta:
+  version: PLCN_v3
+  update_url: null
+exported_at: '2026-08-13T02:13:39+00:00'
+name: 'Battlefield Bad Company 2'
+author: support@kandru.de
+uuid: c1f76d2a-3bad-4d96-a705-67dcef86c2b4
+description: 'Dockered Battlefield Bad Company 2 server'
+icon: null
+tags: {  }
+features: {  }
+docker_images:
+  'docker-pelican-bfbc2 (latest)': 'ghcr.io/derkalle4/docker-pelican-bfbc2:latest'
+file_denylist: {  }
+startup_commands:
+  Default: 'rm /home/container/instance/*.log || true && wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance -mapPack2Enabled 1 -port 0.0.0.0:{{SERVER_PORT}} -remoteAdminPort 0.0.0.0:{{SERVER_QUERY_PORT}} -timeStampLogNames -region {{SERVER_REGION}} -heartBeatInterval 20000 -displayErrors 0 -displayAsserts 0 -crashDumpAsserts 0 -plasmaServerLog 0 -crashDumpErrors 0 -Server.ThreadingEnable true -Core.JobProcessorCount 2'
+config:
+  files:
+    instance/ServerOptions.ini:
+      parser: ini
+      find:
+        Options.Name: '{{server.environment.SERVER_NAME}}'
+        Options.Port: '{{server.allocations.default.port}}'
+        Options.RemoteAdminPort: '{{server.environment.SERVER_QUERY_PORT}}'
+        Options.RemoteAdminPassword: '{{server.environment.SERVER_RCON_PASSWORD}}'
+    instance/AdminScripts/Startup.txt:
+      parser: file
+      find:
+        admin.password: 'admin.password "{{server.environment.SERVER_RCON_PASSWORD}}"'
+        vars.serverName: 'vars.serverName "{{server.environment.SERVER_NAME}}"'
+  startup:
+    done: Frost.Game.Main_Win32_Final.exe
+  logs: {  }
+  stop: ^C
+scripts:
+  installation:
+    script: |-
+      #!/bin/bash
+      # The wine generic server installer
+      # This will just pull a download link and unpack it in directory if specified.
+
+      echo "-----------------------------------------"
+      echo "Preparing Installation Image..."
+      echo "-----------------------------------------"
+      mkdir -pm755 /etc/apt/keyrings
+      wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+      wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources
+
+      apt update -y
+
+      echo "-----------------------------------------"
+      echo "Install Dependencies..."
+      echo "-----------------------------------------"
+      apt install --no-install-recommends -y curl file unzip tar cabextract xvfb xauth winehq-stable xvfb libgl1-mesa-glx:i386 winbind
+
+      if [ ! -d /mnt/server ]; then
+          mkdir -p /mnt/server/
+      fi
+
+      chown root:root /mnt/server/
+      cd /mnt/server/
+
+      echo "-----------------------------------------"
+      echo "Download bfbc2 server..."
+      echo "-----------------------------------------"
+
+      # validate server link
+      if [ ! -z "${DOWNLOAD_URL}" ]; then 
+          if curl --output /dev/null --silent --head --fail ${DOWNLOAD_URL}; then
+              echo -e "link is valid. setting download link to ${DOWNLOAD_URL}"
+              DOWNLOAD_LINK=${DOWNLOAD_URL}
+          else        
+              echo -e "link is invalid closing out"
+              exit 2
+          fi
+      fi
+
+      curl -sSL# ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*/}
+
+      # unpack servver files
+      FILETYPE=$(file -F ',' ${DOWNLOAD_LINK##*/} | cut -d',' -f2 | cut -d' ' -f2)
+
+      if [ "$FILETYPE" == "gzip" ]; then
+          tar xzvf ${DOWNLOAD_LINK##*/}
+      elif [ "$FILETYPE" == "Zip" ]; then
+          unzip -o ${DOWNLOAD_LINK##*/}
+      elif [ "$FILETYPE" == "XZ" ]; then
+          tar xvf ${DOWNLOAD_LINK##*/}
+      else
+          echo -e "unknown filetype. Exiting"
+          exit 2 
+      fi
+
+      rm ${DOWNLOAD_LINK##*/}
+
+      echo "-----------------------------------------"
+      echo "Install Wine Environment..."
+      echo "-----------------------------------------"
+
+      # install winetricks
+      wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks \
+          && chmod +x /bin/winetricks
+
+      export WINEARCH=win64
+      export WINEPREFIX="/mnt/server/.wine_bfbc2"
+      export WINEDLLOVERRIDES="mscoree,mshtml="
+      export WINEDEBUG=-all
+
+      # install bfbc2 dependencies
+      xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" /bin/winetricks -q dinput8 vcrun2005 vcrun2008 vcrun2010
+
+      # remove unnecessary cache data
+      rm -rf /mnt/server/.cache/
+
+      ## install end
+      echo "-----------------------------------------"
+      echo "Installation completed..."
+      echo "-----------------------------------------"
+
+      sleep 5
+    container: 'ghcr.io/parkervcp/installers:debian'
+    entrypoint: bash
+variables:
+  -
+    sort: 1
+    name: 'Server Download URL'
+    description: 'URL with a .zip file which conains the server files.'
+    env_variable: DOWNLOAD_URL
+    default_value: 'https://example.com/bfbc2_server.zip'
+    user_viewable: false
+    user_editable: false
+    rules:
+      - required
+      - string
+  -
+    sort: 4
+    name: 'Server Name'
+    description: 'Name of the Server for the ingame server browser'
+    env_variable: SERVER_NAME
+    default_value: 'battlefield server'
+    user_viewable: true
+    user_editable: true
+    rules:
+      - required
+      - string
+      - 'min:6'
+      - 'max:40'
+  -
+    sort: 5
+    name: 'Server Query Port'
+    description: ''
+    env_variable: SERVER_QUERY_PORT
+    default_value: 25200
+    user_viewable: true
+    user_editable: false
+    rules:
+      - required
+      - Integer
+      - 'min:1024'
+      - 'max:65535'
+  -
+    sort: 3
+    name: 'Server RCON Password'
+    description: 'Remote-Administration password. Should be set to something secure.'
+    env_variable: SERVER_RCON_PASSWORD
+    default_value: ''
+    user_viewable: true
+    user_editable: true
+    rules:
+      - required
+      - string
+      - 'min:2'
+      - 'max:20'
+  -
+    sort: 2
+    name: 'Server Region'
+    description: 'server region - e.g. EU or NA'
+    env_variable: SERVER_REGION
+    default_value: EU
+    user_viewable: true
+    user_editable: true
+    rules:
+      - required
+      - string
+      - 'min:2'
+      - 'max:3'
