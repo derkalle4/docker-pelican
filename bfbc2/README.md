@@ -1,40 +1,78 @@
-# Pelican / Pterodactyl Battlefield Bad Company 2 Dedicated Server
+# Battlefield Bad Company 2 (Pelican / Pterodactyl)
 
-This egg allows one to host a Battlefield Bad Company 2 Server within the Pelican or Pterodactyl Panel. I've created a docker container (~3.67GB currently), will be optimized in future and an automatically created wine-environment for the game itself. Total size including server-files around 1GB.
+Docker egg for a BFBC2 dedicated server under Wine.
 
-## FAQ
+## Install
 
-#### where do I find the battlfield bad company 2 server files?
+1. Host your server files as a `.zip` and set the egg’s download URL.
+2. The install script downloads and extracts them, then prepares the Wine prefix.
 
-Search the internet. I do not provide them to you. Please do not ask!
+Server files are **not** included. Do not ask for them.
 
-#### How does the egg install the game server files?
+Your `bfbc2_server.zip` should unpack like this:
 
-You have to upload the game server files as a .zip file somewhere and fill in the environemnt variable of the egg. The installation script will automatically download and extract the files for you. It would be more optimized to include the dedicated server files within the docker container. But to avoid legal consequences I won't do this.
+```text
+bfbc2_server/
+├── dist/
+├── instance/
+├── Scripts/
+├── Frost.Game.Main_Win32_Final.exe
+├── Win32Game.cfg
+├── launcher.ini
+├── launcher.log
+├── info.txt
+├── branch.txt
+├── changelist_bin.txt
+├── changelist_data.txt
+├── database.dbmanifest
+├── ProviderID.dat
+├── binkw32.dll
+├── D3DCompiler_42.dll
+├── d3dx10_42.dll
+├── d3dx11_42.dll
+├── D3DX9_42.dll
+├── DejaDLL.Win32.dll
+├── dinput8.dll
+├── libeay32.dll
+├── ssleay32.dll
+├── tibems.dll
+└── zlib1.dll
+```
 
-The .zip file should contain the following files and folders:
 
-- dist (folder)
-- instance (folder)
-- Scripts (folder)
-- binkw32.dll
-- branch.txt
-- changelist_bin.txt
-- changelist_data.txt
-- D3DCompiler_42.dll
-- d3dx10_42.dll
-- d3dx11_42.dll
-- D3DX9_42.dll
-- database.dbmanifest
-- DejaDLL.Win32.dll
-- dinput8.dll
-- Frost.Game.Main_Win32_Final.exe
-- info.txt
-- launcher.ini
-- launcher.log
-- libeay32.dll
-- ProviderID.dat
-- ssleay32.dll
-- tibems.dll
-- Win32Game.cfg
-- zlib1.dll
+## Startup command
+
+Edit **Startup** in the panel. The container always:
+
+- cleans old `instance/*.log` / `*.dmp`
+- runs your startup command
+- tails the instance log when it appears
+
+Keep the main game as the **last foreground** process.
+
+### Default (main game only)
+
+```bash
+wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance -mapPack2Enabled 1 -port 0.0.0.0:{{SERVER_PORT}} -remoteAdminPort 0.0.0.0:{{SERVER_QUERY_PORT}} -timeStampLogNames -region {{SERVER_REGION}} -heartBeatInterval 20000 -displayErrors 1 -displayAsserts 1 -crashDumpAsserts 1 -plasmaServerLog 0 -crashDumpErrors 1 -Server.ThreadingEnable true -Core.JobProcessorCount 2
+```
+
+### One helper before the game
+
+Start helpers with `&`, then the main exe **without** `&`:
+
+```bash
+wine NEMOSKALconfig.exe & wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance ... -region {{SERVER_REGION}} ...
+```
+
+### Multiple helpers
+
+```bash
+wine NEMOSKALconfig.exe & wine OtherHelper.exe --flag & wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance ... 
+```
+
+Rules:
+
+- Put each helper as `wine Something.exe … &`
+- Leave Frost as the last command (no trailing `&`) so the server stays “online” until Frost exits
+- Panel variables like `{{SERVER_PORT}}` still work
+- Helper exes must live in the server root (same folder as Frost), or use a path relative to `/home/container`
