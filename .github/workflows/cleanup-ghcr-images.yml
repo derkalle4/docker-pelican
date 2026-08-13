@@ -1,0 +1,28 @@
+name: cleanup old GHCR images
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - docker-pelican-bfbc2
+          - docker-pelican-cod1
+          - docker-pelican-cod4
+          - docker-pelican-fs25
+          - docker-pelican-procon
+          - docker-pelican-swjk2
+    steps:
+      - name: Delete old versions of ${{ matrix.package }}
+        uses: actions/delete-package-versions@v5
+        continue-on-error: true
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: container
+          min-versions-to-keep: 1
