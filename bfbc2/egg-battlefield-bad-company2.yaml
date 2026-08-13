@@ -13,7 +13,7 @@ docker_images:
   'docker-pelican-bfbc2 (latest)': 'ghcr.io/derkalle4/docker-pelican-bfbc2:latest'
 file_denylist: {  }
 startup_commands:
-  Default: 'wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance -mapPack2Enabled 1 -port 0.0.0.0:{{SERVER_PORT}} -remoteAdminPort 0.0.0.0:{{SERVER_QUERY_PORT}} -timeStampLogNames -region {{SERVER_REGION}} -heartBeatInterval 20000 -displayErrors 1 -displayAsserts 1 -crashDumpAsserts 1 -plasmaServerLog 1 -crashDumpErrors 1 -Server.ThreadingEnable true -Core.JobProcessorCount 2'
+  Default: 'wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance -mapPack2Enabled 1 -port 0.0.0.0:{{SERVER_PORT}} -remoteAdminPort 0.0.0.0:{{SERVER_QUERY_PORT}} -timeStampLogNames -region {{SERVER_REGION}} -heartBeatInterval 20000 -displayErrors 1 -displayAsserts 1 -crashDumpAsserts 1 -plasmaServerLog 0 -crashDumpErrors 1 -Server.ThreadingEnable true -Core.JobProcessorCount 2'
 config:
   files:
     instance/ServerOptions.ini:
