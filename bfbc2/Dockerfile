@@ -49,6 +49,10 @@ RUN dpkg --add-architecture i386 \
         winbind \
         xauth \
         xvfb \
+        libgl1:i386 \
+        libgl1-mesa-dri:i386 \
+        libegl1:i386 \
+        libglx-mesa0:i386 \
     && sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
