@@ -13,7 +13,6 @@ ENV USER=container \
     LC_ALL=en_US.UTF-8 \
     WINEARCH=win32 \
     WINEPREFIX=/home/container/.wine_bfbc2 \
-    WINEDLLOVERRIDES="dinput8=n,b;mscoree,mshtml=" \
     WINEDEBUG=-all \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
@@ -22,16 +21,11 @@ ENV USER=container \
     XVFB=1 \
     DEBIAN_FRONTEND=noninteractive
 
-# Enable i386 packages, Debian contrib, and install base packages
 RUN dpkg --add-architecture i386 \
     && if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
-         sed -i \
-           's/^Components: main$/Components: main contrib non-free non-free-firmware/' \
-           /etc/apt/sources.list.d/debian.sources; \
+         sed -i 's/^Components: main$/Components: main contrib non-free non-free-firmware/' /etc/apt/sources.list.d/debian.sources; \
        elif [ -f /etc/apt/sources.list ]; then \
-         sed -i \
-           's/ main$/ main contrib non-free non-free-firmware/' \
-           /etc/apt/sources.list; \
+         sed -i 's/ main$/ main contrib non-free non-free-firmware/' /etc/apt/sources.list; \
        fi \
     && apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -57,29 +51,19 @@ RUN dpkg --add-architecture i386 \
     && sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-    && useradd \
-        --create-home \
-        --home-dir /home/container \
-        --shell /bin/bash \
-        container \
+    && useradd --create-home --home-dir /home/container --shell /bin/bash container \
     && mkdir -p /home/container/.wine_bfbc2 \
     && chown -R container:container /home/container \
     && rm -rf /var/lib/apt/lists/*
 
-# Add the official WineHQ repository
 RUN mkdir -p -m 0755 /etc/apt/keyrings \
-    && wget -O /etc/apt/keyrings/winehq-archive.key \
-        https://dl.winehq.org/wine-builds/winehq.key \
-    && wget -NP /etc/apt/sources.list.d/ \
-        https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources
+    && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
+    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources
 
-# Install WineHQ and Winetricks
 RUN apt-get update \
     && apt-get install --install-recommends -y \
         winehq-stable \
         winetricks \
-    && wine --version \
-    && winetricks --version \
     && rm -rf /var/lib/apt/lists/*
 
 USER container
@@ -89,22 +73,16 @@ WORKDIR /home/container
 ENV WINEARCH=win32 \
     WINEPREFIX=/home/container/.wine_bfbc2
 
-# Initialize Wine and install the BFBC2 runtime components
-RUN xvfb-run -a \
-        -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" \
-        wineboot --init \
-    && xvfb-run -a \
-        -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" \
-        winetricks -q \
-            dinput8 \
-            vcrun2005 \
-            vcrun2008 \
-            vcrun2010 \
-    && test -f "${WINEPREFIX}/winetricks.log" \
+RUN xvfb-run -a -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" wineboot --init \
+    && xvfb-run -a -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" winetricks -q \
+        dinput8 \
+        vcrun2005 \
+        vcrun2008 \
+        vcrun2010 \
+        mono \
     && wineserver -k
 
 COPY --chown=container:container ./bin/entrypoint.sh /entrypoint.sh
-
 RUN chmod 0755 /entrypoint.sh
 
 CMD ["/bin/bash", "/entrypoint.sh"]
