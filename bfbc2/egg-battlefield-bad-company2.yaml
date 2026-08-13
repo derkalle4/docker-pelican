@@ -44,14 +44,14 @@ scripts:
       echo "-----------------------------------------"
       mkdir -pm755 /etc/apt/keyrings
       wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
-      wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources
+      wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources
 
       apt update -y
 
       echo "-----------------------------------------"
       echo "Install Dependencies..."
       echo "-----------------------------------------"
-      apt install --no-install-recommends -y curl file unzip tar cabextract xvfb xauth winehq-stable xvfb libgl1-mesa-glx:i386 winbind
+      apt install --no-install-recommends -y curl file unzip tar cabextract xvfb xauth winehq-stable winbind
 
       if [ ! -d /mnt/server ]; then
           mkdir -p /mnt/server/
@@ -97,20 +97,31 @@ scripts:
       echo "Install Wine Environment..."
       echo "-----------------------------------------"
 
-      # install winetricks
       wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /bin/winetricks \
           && chmod +x /bin/winetricks
 
-      export WINEARCH=win64
+      export WINEARCH=win32
       export WINEPREFIX="/mnt/server/.wine_bfbc2"
-      export WINEDLLOVERRIDES="mscoree,mshtml="
+      export WINEDLLOVERRIDES="dinput8=n,b;mscoree,mshtml="
       export WINEDEBUG=-all
 
-      # install bfbc2 dependencies
-      xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" /bin/winetricks -q dinput8 vcrun2005 vcrun2008 vcrun2010
+      xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" wineboot --init
+
+      echo "Installing Visual C++ runtimes and core fonts..."
+      xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" /bin/winetricks -q \
+          vcrun2005 \
+          vcrun2008 \
+          vcrun2010 \
+          corefonts
+
+      echo "Installing Wine Mono..."
+      wget -O /tmp/wine-mono.msi https://dl.winehq.org/wine/wine-mono/9.4.0/wine-mono-9.4.0-x86.msi
+      xvfb-run -e /dev/stdout -a -s "-nolisten tcp -screen 0 1280x720x24" wine msiexec /i /tmp/wine-mono.msi /qn
+      wineserver -k
+      rm -f /tmp/wine-mono.msi
 
       # remove unnecessary cache data
-      rm -rf /mnt/server/.cache/
+      rm -rf /mnt/server/.cache/ /root/.cache/winetricks/
 
       ## install end
       echo "-----------------------------------------"

@@ -13,6 +13,7 @@ ENV USER=container \
     LC_ALL=en_US.UTF-8 \
     WINEARCH=win32 \
     WINEPREFIX=/home/container/.wine_bfbc2 \
+    WINEDLLOVERRIDES="dinput8=n,b;mscoree,mshtml=" \
     WINEDEBUG=-all \
     DISPLAY=:0 \
     DISPLAY_WIDTH=1280 \
@@ -61,26 +62,13 @@ RUN mkdir -p -m 0755 /etc/apt/keyrings \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources
 
 RUN apt-get update \
-    && apt-get install --install-recommends -y \
+    && apt-get install --no-install-recommends -y \
         winehq-stable \
-        winetricks \
     && rm -rf /var/lib/apt/lists/*
 
 USER container
 
 WORKDIR /home/container
-
-ENV WINEARCH=win32 \
-    WINEPREFIX=/home/container/.wine_bfbc2
-
-RUN xvfb-run -a -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" wineboot --init \
-    && xvfb-run -a -s "-screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}" winetricks -q \
-        dinput8 \
-        vcrun2005 \
-        vcrun2008 \
-        vcrun2010 \
-        mono \
-    && wineserver -k
 
 COPY --chown=container:container ./bin/entrypoint.sh /entrypoint.sh
 RUN chmod 0755 /entrypoint.sh
