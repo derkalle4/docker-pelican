@@ -68,15 +68,45 @@ wait_for_instance_log() {
     return 1
 }
 
+# STARTUP runs under setsid, so SERVER_PID is the process-group leader.
+# kill -- -PID signals the whole group (Frost + background helpers).
+stop_server_group() {
+    local pid="${1:-}"
+    [[ -z "${pid}" ]] && return 0
+    if ! kill -0 "${pid}" 2>/dev/null; then
+        return 0
+    fi
+
+    kill -INT -- "-${pid}" 2>/dev/null || kill -INT "${pid}" 2>/dev/null || true
+
+    local i
+    for i in 1 2 3 4 5; do
+        kill -0 "${pid}" 2>/dev/null || break
+        sleep 0.2
+    done
+
+    if kill -0 "${pid}" 2>/dev/null; then
+        kill -TERM -- "-${pid}" 2>/dev/null || kill -TERM "${pid}" 2>/dev/null || true
+        sleep 0.5
+    fi
+
+    if kill -0 "${pid}" 2>/dev/null; then
+        kill -KILL -- "-${pid}" 2>/dev/null || kill -KILL "${pid}" 2>/dev/null || true
+    fi
+
+    wait "${pid}" 2>/dev/null || true
+    wineserver -k 2>/dev/null || true
+}
+
 cleanup() {
     if [[ -n "${TAIL_PID}" ]] && kill -0 "${TAIL_PID}" 2>/dev/null; then
         kill "${TAIL_PID}" 2>/dev/null || true
         wait "${TAIL_PID}" 2>/dev/null || true
     fi
 
-    if [[ -n "${SERVER_PID}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
-        kill -INT "${SERVER_PID}" 2>/dev/null || true
-        wait "${SERVER_PID}" 2>/dev/null || true
+    if [[ -n "${SERVER_PID}" ]]; then
+        stop_server_group "${SERVER_PID}"
+        SERVER_PID=""
     fi
 
     if [[ -n "${XVFB_PID}" ]] && kill -0 "${XVFB_PID}" 2>/dev/null; then
@@ -112,7 +142,8 @@ STARTUP_COMMAND="$(resolve_startup)"
 log "Running:"
 log "${STARTUP_COMMAND}"
 
-bash -c "${STARTUP_COMMAND}" &
+# Own session/process group so Ctrl+C can stop Frost and background helpers together.
+setsid bash -c "${STARTUP_COMMAND}" &
 SERVER_PID=$!
 
 LOG_FILE=""
