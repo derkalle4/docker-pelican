@@ -16,26 +16,15 @@ bfbc2_server/
 ├── dist/
 ├── instance/
 ├── Scripts/
-├── Frost.Game.Main_Win32_Final.exe
-├── Win32Game.cfg
-├── launcher.ini
-├── launcher.log
-├── info.txt
-├── branch.txt
-├── changelist_bin.txt
-├── changelist_data.txt
-├── database.dbmanifest
-├── ProviderID.dat
 ├── binkw32.dll
-├── D3DCompiler_42.dll
-├── d3dx10_42.dll
-├── d3dx11_42.dll
-├── D3DX9_42.dll
-├── DejaDLL.Win32.dll
-├── dinput8.dll
+├── database.dbmanifest
+├── dinput8.dll <-- Veniceunleashed (Rome) Masterserver-Replacement
+├── Frost.Game.Main_Win32_Final.exe
 ├── libeay32.dll
+├── ProviderID.dat
 ├── ssleay32.dll
 ├── tibems.dll
+├── Win32Game.cfg
 └── zlib1.dll
 ```
 
