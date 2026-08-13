@@ -13,7 +13,7 @@ docker_images:
   'docker-pelican-bfbc2 (latest)': 'ghcr.io/derkalle4/docker-pelican-bfbc2:latest'
 file_denylist: {  }
 startup_commands:
-  Default: 'rm /home/container/instance/*.log || true && rm /home/container/instance/*.dmp || true && wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance -mapPack2Enabled 1 -port 0.0.0.0:{{SERVER_PORT}} -remoteAdminPort 0.0.0.0:{{SERVER_QUERY_PORT}} -timeStampLogNames -region {{SERVER_REGION}} -heartBeatInterval 20000 -displayErrors 1 -displayAsserts 1 -crashDumpAsserts 1 -plasmaServerLog 1 -crashDumpErrors 1fi -Server.ThreadingEnable true -Core.JobProcessorCount 2'
+  Default: 'rm /home/container/instance/*.log 2>/dev/null || true; rm /home/container/instance/*.dmp 2>/dev/null || true; wine Frost.Game.Main_Win32_Final.exe -serverInstancePath instance -mapPack2Enabled 1 -port 0.0.0.0:{{SERVER_PORT}} -remoteAdminPort 0.0.0.0:{{SERVER_QUERY_PORT}} -timeStampLogNames -region {{SERVER_REGION}} -heartBeatInterval 20000 -displayErrors 1 -displayAsserts 1 -crashDumpAsserts 1 -plasmaServerLog 1 -crashDumpErrors 1 -Server.ThreadingEnable true -Core.JobProcessorCount 2 & SERVER_PID=$!; trap ''kill -INT $SERVER_PID ${TAIL_PID:-} 2>/dev/null; wait $SERVER_PID 2>/dev/null || true; exit 130'' INT TERM; LOG_FILE=""; for _ in $(seq 1 10); do COUNT=$(find /home/container/instance -maxdepth 1 -name ''*.log'' -type f 2>/dev/null | wc -l); if [ "$COUNT" -eq 1 ]; then LOG_FILE=$(find /home/container/instance -maxdepth 1 -name ''*.log'' -type f 2>/dev/null | head -1); break; fi; sleep 1; done; if [ -n "$LOG_FILE" ]; then tail -n +1 -F "$LOG_FILE" & TAIL_PID=$!; fi; wait "$SERVER_PID"'
 config:
   files:
     instance/ServerOptions.ini:
