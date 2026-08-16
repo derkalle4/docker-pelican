@@ -33,7 +33,7 @@ bfbc2_server/
 
 Edit **Startup** in the panel. The container always:
 
-- cleans old `instance/*.log` / `*.dmp`
+- archives old `instance/*.log` / `*.dmp` into `instance/logs/` (keeps the newest 10)
 - runs your startup command
 - tails the instance log when it appears
 

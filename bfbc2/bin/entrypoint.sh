@@ -48,7 +48,22 @@ resolve_startup() {
 }
 
 cleanup_instance_artifacts() {
-    rm -f "${INSTANCE_DIR}"/*.log "${INSTANCE_DIR}"/*.dmp 2>/dev/null || true
+    local logs_dir="${INSTANCE_DIR}/logs"
+    local -a old_files
+
+    mkdir -p "${logs_dir}"
+    find "${INSTANCE_DIR}" -maxdepth 1 \( -name '*.log' -o -name '*.dmp' \) -type f \
+        -exec mv -t "${logs_dir}" {} + 2>/dev/null || true
+
+    mapfile -t old_files < <(
+        find "${logs_dir}" -maxdepth 1 \( -name '*.log' -o -name '*.dmp' \) -type f -printf '%T@\t%p\n' \
+            | sort -nr \
+            | tail -n +11 \
+            | cut -f2-
+    )
+    if (( ${#old_files[@]} > 0 )); then
+        rm -f -- "${old_files[@]}"
+    fi
 }
 
 wait_for_instance_log() {
