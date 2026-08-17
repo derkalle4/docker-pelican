@@ -1,0 +1,29 @@
+name: deploy SuperTuxKart to ghcr.io
+on:
+  push:
+    paths:
+      - SuperTuxKart/bin/*
+      - SuperTuxKart/Dockerfile
+  workflow_dispatch:
+jobs:
+  docker-supertuxkart:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: './SuperTuxKart'
+    steps:
+      - name: 'Checkout Source Code'
+        uses: actions/checkout@main
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+      - name: 'Build and Deploy Docker Container'
+        run: |
+          docker build . --tag ghcr.io/derkalle4/docker-pelican-supertuxkart:latest
+          docker push ghcr.io/derkalle4/docker-pelican-supertuxkart:latest

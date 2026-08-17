@@ -1,0 +1,151 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-08-18T00:00:00+00:00",
+    "name": "SuperTuxKart",
+    "author": "support@kandru.de",
+    "uuid": "9eec81aa-b165-4233-aa30-1244c6c96e9f",
+    "description": "Dockered SuperTuxKart dedicated server using the official Linux release.",
+    "features": [],
+    "docker_images": {
+        "docker-pelican-supertuxkart (latest)": "ghcr.io/derkalle4/docker-pelican-supertuxkart:latest"
+    },
+    "file_denylist": [],
+    "startup": "./bin/supertuxkart --no-graphics --server-config={{CONFIG_NAME}} --lan-server={{SERVER_NAME}} --network-console --port=\"{{SERVER_PORT}}\" --difficulty={{DIFFICULTY}} --mode={{MODE}} --max-players={{MAX_PLAYERS}} --motd=\"{{MOTD}}\"",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"Available command:\"\n}",
+        "logs": "{}",
+        "stop": "quit"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\nset -euo pipefail\n\necho \"-----------------------------------------\"\necho \"Preparing SuperTuxKart installation...\"\necho \"-----------------------------------------\"\n\napt-get update -y\napt-get install --no-install-recommends -y curl ca-certificates tar gzip xz-utils unzip\n\nmkdir -p /mnt/server\ncd /mnt/server\nchown root:root /mnt/server || true\n\nSTK_VERSION=\"${STK_VERSION:-1.5}\"\n\ndetect_stk_arch() {\n    case \"$(uname -m)\" in\n        x86_64) echo \"x86_64\" ;;\n        aarch64|arm64) echo \"arm64\" ;;\n        armv7l|armv6l) echo \"armv7\" ;;\n        i386|i686) echo \"x86\" ;;\n        riscv64) echo \"riscv64\" ;;\n        *)\n            echo \"Unsupported architecture: $(uname -m)\" >&2\n            exit 2\n            ;;\n    esac\n}\n\nif [ -n \"${DOWNLOAD_URL:-}\" ]; then\n    DOWNLOAD_LINK=\"${DOWNLOAD_URL}\"\nelse\n    STK_ARCH=\"$(detect_stk_arch)\"\n    DOWNLOAD_LINK=\"https://github.com/supertuxkart/stk-code/releases/download/${STK_VERSION}/SuperTuxKart-${STK_VERSION}-linux-${STK_ARCH}.tar.gz\"\nfi\n\necho \"-----------------------------------------\"\necho \"Downloading SuperTuxKart...\"\necho \"-----------------------------------------\"\necho \"downloading: ${DOWNLOAD_LINK}\"\n\nTMP_ARCHIVE=\"/tmp/stk-download\"\ncurl -fL --retry 3 --retry-delay 2 -o \"${TMP_ARCHIVE}\" \"${DOWNLOAD_LINK}\"\n\necho \"-----------------------------------------\"\necho \"Extracting SuperTuxKart...\"\necho \"-----------------------------------------\"\n\nEXTRACT_DIR=\"/tmp/stk-extract\"\nrm -rf \"${EXTRACT_DIR}\"\nmkdir -p \"${EXTRACT_DIR}\"\n\nset +e\ntar -xf \"${TMP_ARCHIVE}\" -C \"${EXTRACT_DIR}\"\nTAR_STATUS=$?\nset -e\nif [ \"${TAR_STATUS}\" -ne 0 ]; then\n    if ! unzip -q -o \"${TMP_ARCHIVE}\" -d \"${EXTRACT_DIR}\"; then\n        echo \"unknown archive format. Exiting\"\n        exit 2\n    fi\nfi\n\nrm -f \"${TMP_ARCHIVE}\"\n\n# Official archives wrap files in a single SuperTuxKart-*-linux-* directory.\nSRC=\"${EXTRACT_DIR}\"\nentries=(\"${EXTRACT_DIR}\"/*)\nif [ \"${#entries[@]}\" -eq 1 ] && [ -d \"${entries[0]}\" ]; then\n    SRC=\"${entries[0]}\"\nfi\n\nif [ ! -f \"${SRC}/bin/supertuxkart\" ]; then\n    echo \"ERROR: archive does not contain bin/supertuxkart\"\n    find \"${EXTRACT_DIR}\" -maxdepth 3 -print\n    exit 1\nfi\n\n# Replace game payload, keep user configs (config.xml, logs, addons).\nrm -rf /mnt/server/bin /mnt/server/lib /mnt/server/data /mnt/server/run_game.sh\nmkdir -p /mnt/server\ncp -a \"${SRC}/.\" /mnt/server/\nrm -rf \"${EXTRACT_DIR}\"\n\nchmod +x /mnt/server/bin/supertuxkart\nif [ -f /mnt/server/run_game.sh ]; then\n    chmod +x /mnt/server/run_game.sh\nfi\n\nif [ ! -x /mnt/server/bin/supertuxkart ]; then\n    echo \"ERROR: bin/supertuxkart is missing after install.\"\n    ls -la /mnt/server || true\n    ls -la /mnt/server/bin || true\n    exit 1\nfi\n\necho \"-----------------------------------------\"\necho \"Installation completed...\"\necho \"-----------------------------------------\"\n",
+            "container": "ghcr.io/parkervcp/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "sort": 1,
+            "name": "Server Name",
+            "description": "The Name of the Server",
+            "env_variable": "SERVER_NAME",
+            "default_value": "Pterodactyl_Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:50"
+            ],
+            "field_type": "text"
+        },
+        {
+            "sort": 2,
+            "name": "Config File Name",
+            "description": "Name of the Config File.",
+            "env_variable": "CONFIG_NAME",
+            "default_value": "config.xml",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "regex:/^([\\w\\d._-]+)(\\.xml)$/"
+            ],
+            "field_type": "text"
+        },
+        {
+            "sort": 3,
+            "name": "Mode",
+            "description": "0 = Normal Race\n1 = Time Trial\n2 = Battle\n3 = Soccer\n4 = Follow The Leader\n5 = Capture the Flag",
+            "env_variable": "MODE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:0,1,2,3,4,5"
+            ],
+            "field_type": "text"
+        },
+        {
+            "sort": 4,
+            "name": "Difficulty",
+            "description": "Speed of the carts and AI difficulty\n0 = Beginner\n1 = Intermediate\n2 = Expert\n3 = SuperTux",
+            "env_variable": "DIFFICULTY",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:0,1,2,3"
+            ],
+            "field_type": "text"
+        },
+        {
+            "sort": 5,
+            "name": "Max Players",
+            "description": "How many players can there be in the server.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "8",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "between:1,24"
+            ],
+            "field_type": "text"
+        },
+        {
+            "sort": 6,
+            "name": "Message of the Day",
+            "description": "Message of the Day displayed in the server.",
+            "env_variable": "MOTD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string",
+                "max:100"
+            ],
+            "field_type": "text"
+        },
+        {
+            "sort": 7,
+            "name": "SuperTuxKart Version",
+            "description": "GitHub release tag to download (for example 1.5).",
+            "env_variable": "STK_VERSION",
+            "default_value": "1.5",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": [
+                "required",
+                "string",
+                "max:20"
+            ],
+            "field_type": "text"
+        },
+        {
+            "sort": 8,
+            "name": "Server Download URL",
+            "description": "Optional override URL for a SuperTuxKart Linux archive. Leave empty to download the official GitHub release.",
+            "env_variable": "DOWNLOAD_URL",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": [
+                "nullable",
+                "string"
+            ],
+            "field_type": "text"
+        }
+    ]
+}
