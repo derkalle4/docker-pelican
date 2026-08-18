@@ -20,9 +20,9 @@ export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-dummy}"
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
 export INTERNAL_IP
 
-# Replace Startup Variables
-MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
-echo -e "running: ${MODIFIED_STARTUP}"
+# Replace {{VAR}} placeholders, then let bash expand "${VAR}" so values with spaces stay one argument.
+MODIFIED_STARTUP=$(printf '%b' "${STARTUP}" | sed -e 's/{{/${/g' -e 's/}}/}/g')
+echo "running: ${MODIFIED_STARTUP}"
 
 # Run the Server
-bash -c "${MODIFIED_STARTUP}"
+exec bash -c "${MODIFIED_STARTUP}"

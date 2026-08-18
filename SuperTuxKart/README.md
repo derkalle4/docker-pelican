@@ -12,6 +12,12 @@ Default version is **1.5**. Change `STK_VERSION` to another GitHub release tag i
 
 ## Startup
 
+Keep quotes around `"${SERVER_NAME}"` and `"${MOTD}"` so names with spaces stay one argument:
+
+```bash
+./bin/supertuxkart --no-graphics --server-config="${CONFIG_NAME}" --lan-server="${SERVER_NAME}" --network-console --port="${SERVER_PORT}" --difficulty="${DIFFICULTY}" --mode="${MODE}" --max-players="${MAX_PLAYERS}" --motd="${MOTD}"
+```
+
 The default command starts a LAN server. To publish a WAN server in the SuperTuxKart online lobby, replace `--lan-server=` with `--wan-server=` and log in with a [SuperTuxKart account](https://online.supertuxkart.net/) first (`supertuxkart --init-user --login=USER --password=PASS`).
 
 ## Ports

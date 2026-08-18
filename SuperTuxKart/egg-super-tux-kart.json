@@ -14,7 +14,7 @@
         "docker-pelican-supertuxkart (latest)": "ghcr.io/derkalle4/docker-pelican-supertuxkart:latest"
     },
     "file_denylist": [],
-    "startup": "./bin/supertuxkart --no-graphics --server-config=\"{{CONFIG_NAME}}\" --lan-server=\"{{SERVER_NAME}}\" --network-console --port=\"{{SERVER_PORT}}\" --difficulty={{DIFFICULTY}} --mode={{MODE}} --max-players={{MAX_PLAYERS}} --motd=\"{{MOTD}}\"",
+    "startup": "./bin/supertuxkart --no-graphics --server-config=\"${CONFIG_NAME}\" --lan-server=\"${SERVER_NAME}\" --network-console --port=\"${SERVER_PORT}\" --difficulty=\"${DIFFICULTY}\" --mode=\"${MODE}\" --max-players=\"${MAX_PLAYERS}\" --motd=\"${MOTD}\"",
     "config": {
         "files": "{}",
         "startup": "{\n    \"done\": \"Available command:\"\n}",
